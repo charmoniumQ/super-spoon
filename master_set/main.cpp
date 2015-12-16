@@ -2,7 +2,6 @@
 #include <iostream>
 #include "card.hpp"
 #include "thread_pool.hpp"
-#include "miterator.hpp"
 
 /*
 g++ -std=c++11 -pthread -Wall -g -o main *.cpp
@@ -13,7 +12,12 @@ void test1() {
   Card c2 ("1201");
   Card c3 = -(c1 + c2);
   Card c4 = c1 + c2 + c3;
-  std::cout << c1.str() << " " << c2.str() << " " << c4.str() << " " << std::endl;
+  Card zero ("0000");
+  std::cout << c1.str() << " "
+			<< c2.str() << " "
+			<< c3.str() << " "
+			<< c4.str() << " "
+			<< (c1 != zero) << (c1 == zero) << (c4 == zero) << std::endl;
 }
 
 std::tuple<uint8_t, bool> worker_func(uint8_t i, uint8_t pid) {
@@ -34,11 +38,14 @@ void test2() {
 
   int val = 0;
   bool success = false;
-  std::tie(val, success) = mrd<std::vector<uint8_t>::iterator, uint8_t, uint8_t>(worker_func, input.begin(), input.end(), 3);
+  std::tie(val, success) = mrd<std::vector<uint8_t>::const_iterator, uint8_t, uint8_t>(worker_func, input.cbegin(), input.cend(), 3);
   std::cout << "result: " << success << " with " << val << std::endl;
 }
 
+void test3() {
+}
+
 int main(int argc, char* argv[]) {
-  test2();
+  test3();
   return 0;
 }

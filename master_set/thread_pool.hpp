@@ -12,11 +12,11 @@ template<typename Iterator, typename K, typename V>
 class ThreadFunc {
 public:
   ThreadFunc(
-			 std::function<std::tuple<K, bool>(V, uint8_t)> worker_m, 
-        std::mutex* input_lock_m,
-		std::mutex* output_lock_m,
+		const std::function<std::tuple<K, bool>(V, uint8_t)> worker_m, 
+        std::mutex& input_lock_m,
+		std::mutex& output_lock_m,
 		Iterator& work_chunks_m,
-		Iterator& end_m,
+		const Iterator& end_m,
 		K& output_value_m,
 		bool& terminated_m,
 		bool& success_m) : 
@@ -34,7 +34,7 @@ public:
 	bool local_terminated;
 	V input;
 	while (true) {
-	  input_lock->lock();
+	  input_lock.lock();
 	  {
 		if (work_chunks == end) {
 		  // End of input data
@@ -48,7 +48,7 @@ public:
 		  input = *work_chunks++;
 		}
 	  }
-	  input_lock->unlock();
+	  input_lock.unlock();
 
 	  if (local_terminated) {
 		return;
@@ -57,7 +57,7 @@ public:
 	  std::tie(local_output_value, local_terminated) = worker(input, pid);
 	  if (local_terminated) {
 		// I found the end!!!
-		output_lock->unlock();
+		output_lock.unlock();
 		{
 		  // This signals other threads to stop
 		  terminated = local_terminated;
@@ -66,17 +66,17 @@ public:
 		  // This signals that I got an answer
 		  success = true;
 		}
-		output_lock->lock();
+		output_lock.lock();
 		return;
 	  }
 	}
   };
 private:
-  std::function<std::tuple<K, bool>(V, uint8_t)> worker;
-  std::mutex* input_lock;
-  std::mutex* output_lock;
+  const std::function<std::tuple<K, bool>(V, uint8_t)> worker;
+  std::mutex& input_lock;
+  std::mutex& output_lock;
   Iterator& work_chunks;
-  Iterator& end;
+  const Iterator& end;
   K& output_value;
   bool& terminated;
   bool& success;
@@ -85,7 +85,7 @@ private:
 template<typename Iterator, typename K, typename V>
 std::tuple<K, bool> mrd(
 						std::function<std::tuple<K, bool>(V, uint8_t)> worker,
-    Iterator work_chunks, Iterator end,
+    Iterator work_chunks, const Iterator& end,
     uint8_t thread_count
 ) {
   std::mutex output_lock, input_lock;
@@ -93,7 +93,7 @@ std::tuple<K, bool> mrd(
   bool terminated = false, success = false;
 
   std::vector<std::thread*> threadss (thread_count);
-  ThreadFunc<Iterator, K, V> thread_func (worker, &input_lock, &output_lock, work_chunks, end, output_value, terminated, success);
+  ThreadFunc<Iterator, K, V> thread_func (worker, input_lock, output_lock, work_chunks, end, output_value, terminated, success);
   for (int i = 0; i < thread_count; ++i) {
 	//std::function<void(void)> f = std::bind(&thread_func.run_func, &input_lock, &output_lock, work_chunks, end, output_value, terminated, success);
 	threadss[i] = new std::thread(thread_func, i);
