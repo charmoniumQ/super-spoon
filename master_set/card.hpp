@@ -1,3 +1,6 @@
+#ifndef CARD_H
+#define CARD_H
+
 #include <string>
 
 class Card {
@@ -10,3 +13,5 @@ public:
 private:
   uint16_t data;
 };
+
+#endif
