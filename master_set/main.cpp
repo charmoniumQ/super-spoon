@@ -2,6 +2,7 @@
 #include <iostream>
 #include "card.hpp"
 #include "thread_pool.hpp"
+#include "combo.hpp"
 
 /*
 g++ -std=c++11 -pthread -Wall -g -o main *.cpp
@@ -42,7 +43,19 @@ void test2() {
   std::cout << "result: " << success << " with " << val << std::endl;
 }
 
+template <typename T>
+void print_vec(const std::vector<T>& data) {
+  for (typename std::vector<T>::const_iterator it = data.cbegin(); it != data.cend(); ++it) {
+	std::cout << *it << " ";
+  }
+  std::cout << std::endl;
+}
+
 void test3() {
+  Combinations c (5, 3);
+  for (; c != c.end(); c++) {
+	print_vec(*c);
+  }
 }
 
 int main(int argc, char* argv[]) {
