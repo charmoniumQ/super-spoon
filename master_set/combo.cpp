@@ -1,20 +1,20 @@
 #include "combo.hpp"
 
 Combinations::Combinations(uint8_t p_m, uint8_t q_m) : 
-  q (q_m),
   p (p_m),
+  q (q_m),
   data (q) {
-  for (int i = 0; i < q; ++i) {
+  for (uint8_t i = 0; i < q; ++i) {
 	data[i] = i;
   }
 }
 
 Combinations::Combinations(const Combinations& other) :
-  q (other.p),
   p (other.q),
+  q (other.p),
   data (other.data) { }
 
-std::vector<int> Combinations::operator*() {
+const std::vector<uint8_t>& Combinations::operator*() const {
   return data;
 }
 
@@ -50,17 +50,17 @@ const Combinations Combinations::end() const {
 
 void Combinations::next() {
   data[q - 1]++;
-  for (int i = q - 1; i >= 0; --i) {
-	if (data[i] >= p - q + i + 1) {
-	  data[i] = 0;
-	  if (i > 0) {
-		data[i - 1]++;
+  for (uint8_t i = q; i > 0; --i) {
+	if (data[i-1] >= p - q + i) {
+	  data[i-1] = 0;
+	  if (i > 1) {
+		data[i - 2]++;
 	  } else {
 		data[0] = p; // signal that I am done
 	  }
 	}
   }
-  for (int i = 1; i < q; ++i) {
+  for (uint8_t i = 1; i < q; ++i) {
 	if (data[i] == 0) {
 	  data[i] = data[i - 1] + 1;
 	}

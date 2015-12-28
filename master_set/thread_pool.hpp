@@ -54,7 +54,9 @@ public:
 		return;
 	  }
 
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 	  std::tie(local_output_value, local_terminated) = worker(input, pid);
+#pragma GCC diagnostic pop
 	  if (local_terminated) {
 		// I found the end!!!
 		output_lock.unlock();

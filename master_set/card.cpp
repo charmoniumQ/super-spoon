@@ -21,7 +21,19 @@ Card::Card(uint8_t data_m) : data(data_m) { }
 
 Card::Card() : Card(0) {}
 
-Card operator+(const Card& card1, const Card& card2) {
+const Card& Card::operator++() {
+  data++;
+  data %= 81;
+  return *this;
+}
+
+Card Card::operator++(int) {
+  Card c (data++);
+  data %= 81;
+  return c;
+}
+
+Card operator+(Card card1, Card card2) {
   std::array<uint8_t, 4> digits1 = card1.to_digits(), digits2 = card2.to_digits(), sum;
   for (uint8_t i = 0; i < 4; ++i) {
 	sum[i] = (digits1[i] + digits2[i]) % 3;
@@ -31,11 +43,11 @@ Card operator+(const Card& card1, const Card& card2) {
   return output;
 }
 
-bool operator==(const Card& card1, const Card& card2) {
+bool operator==(Card card1, Card card2) {
   return card1.data == card2.data;
 }
 
-bool operator!=(const Card& card1, const Card& card2) {
+bool operator!=(Card card1, Card card2) {
   return card1.data != card2.data;
 }
 
@@ -79,4 +91,39 @@ void Card::from_digits(std::array<uint8_t, 4> digits) {
   for (uint8_t i = 0; i < 4; ++i) {
 	data += digits[i] * pow(3, 3 - i);
   }
+}
+
+Card::operator int() const {
+  return data;
+}
+
+Card complement(Card card1, Card card2) {
+  return -(card1 + card2);
+}
+
+Deck::Deck(Card card_m) : card(card_m) { }
+
+Deck::Deck() : card(0) { }
+
+const Deck& Deck::operator++() {
+  card++;
+  return *this;
+}
+
+Deck Deck::operator++(int) {
+  Deck old (card++);
+  return old;
+}
+
+bool operator==(Deck c1, Deck c2) {
+  return c1.card == c2.card;
+}
+
+bool operator!=(Deck c1, Deck c2) {
+  return c1.card != c2.card;
+}
+
+
+const Deck Deck::end() const {
+  return Deck(Card(81));
 }
